@@ -1,0 +1,17 @@
+# Frontend
+client/node_modules/
+client/dist/
+client/.vite/
+
+# .NET
+**/bin/
+**/obj/
+TestResults/
+
+# Local configuration
+.env
+*.user
+*.suo
+.DS_Store
+.idea/
+.vscode/
