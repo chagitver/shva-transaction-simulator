@@ -2,6 +2,7 @@
 
 A responsive full-stack transaction simulator built for the Shva developer interview task. The application provides MSSQL-backed user accounts, evaluates a selected moment against the local banking hours of a selected region, stores every result, and displays each user's approved transactions.
 
+https://www.loom.com/share/ef607ffc582a46e7a4335f4356efe025
 ## Stack
 
 - React 19, TypeScript, Vite, TanStack Query
