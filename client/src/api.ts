@@ -1,7 +1,7 @@
 import type { Region, Transaction, User } from './types'
 
 export class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(public status: number, message: string, public code?: string) {
     super(message)
   }
 }
@@ -15,7 +15,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     const problem = await response.json().catch(() => null)
-    throw new ApiError(response.status, problem?.title ?? problem?.detail ?? 'The request could not be completed.')
+    const fieldMessage = problem?.errors && Object.values(problem.errors).flat().find((value) => typeof value === 'string')
+    throw new ApiError(
+      response.status,
+      fieldMessage ?? problem?.detail ?? problem?.title ?? 'The request could not be completed.',
+      problem?.code,
+    )
   }
 
   return response.json() as Promise<T>

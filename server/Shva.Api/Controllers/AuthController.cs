@@ -17,14 +17,14 @@ public sealed class AuthController(AppDbContext db, IPasswordHasher<AppUser> pas
 {
     [HttpPost("register")]
     [ProducesResponseType<UserResponse>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<UserResponse>> Register(RegisterRequest request, CancellationToken cancellationToken)
     {
         var email = request.Email.Trim();
         var normalizedEmail = NormalizeEmail(email);
         if (await db.Users.AnyAsync(user => user.NormalizedEmail == normalizedEmail, cancellationToken))
         {
-            ModelState.AddModelError(nameof(request.Email), "An account with this email already exists.");
-            return ValidationProblem(ModelState);
+            return DuplicateEmailProblem();
         }
 
         var user = new AppUser
@@ -45,8 +45,7 @@ public sealed class AuthController(AppDbContext db, IPasswordHasher<AppUser> pas
         }
         catch (DbUpdateException)
         {
-            ModelState.AddModelError(nameof(request.Email), "An account with this email already exists.");
-            return ValidationProblem(ModelState);
+            return DuplicateEmailProblem();
         }
 
         await SignInAsync(user);
@@ -108,4 +107,18 @@ public sealed class AuthController(AppDbContext db, IPasswordHasher<AppUser> pas
 
     private static string NormalizeEmail(string email) => email.Trim().ToUpperInvariant();
     private static UserResponse ToResponse(AppUser user) => new(user.Id, user.Email, user.DisplayName);
+
+    private static ObjectResult DuplicateEmailProblem()
+    {
+        var problem = new ProblemDetails
+        {
+            Status = StatusCodes.Status409Conflict,
+            Title = "An account with this email already exists."
+        };
+        problem.Extensions["code"] = "duplicate_email";
+
+        var result = new ObjectResult(problem) { StatusCode = problem.Status };
+        result.ContentTypes.Add("application/problem+json");
+        return result;
+    }
 }
