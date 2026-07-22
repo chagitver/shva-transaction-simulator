@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { FormEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getApprovedTransactions, getCurrentUser, getRegions, logout, simulateTransaction } from './api'
 import { messages } from './i18n'
@@ -45,7 +44,7 @@ export default function App() {
     },
   })
   const mutation = useMutation({
-    mutationFn: () => simulateTransaction(regionCode, selectedTimeToIso(time)),
+    mutationFn: (selectedTime: string) => simulateTransaction(regionCode, selectedTimeToIso(selectedTime)),
     onSuccess: (transaction) => {
       setResult(transaction)
       if (transaction.status === 'Approved') {
@@ -68,10 +67,10 @@ export default function App() {
     ? { title: text.approved, detail: text.approvedDetail }
     : { title: text.rejected, detail: text.rejectedDetail }, [result?.status, text])
 
-  const submit = (event: FormEvent) => {
-    event.preventDefault()
+  const confirmTime = (selectedTime: string) => {
+    setTime(selectedTime)
     setResult(null)
-    mutation.mutate()
+    mutation.mutate(selectedTime)
   }
 
   const loadingError = authQuery.isError || regionsQuery.isError || approvedQuery.isError
@@ -109,18 +108,23 @@ export default function App() {
             <div className="global-error" role="alert">{text.loadError}</div>
           ) : (
             <div className="simulator-stage">
-              <form className="simulator-form" onSubmit={submit}>
+              <div className="simulator-form">
                 <RegionCombobox
                   regions={regionsQuery.data ?? []}
                   value={regionCode}
                   locale={locale}
                   text={text}
-                  onChange={setRegionCode}
+                  onChange={(nextRegion) => {
+                    setRegionCode(nextRegion)
+                    setResult(null)
+                  }}
                 />
-                <TimePicker value={time} text={text} onChange={setTime} />
-                <button className="submit-button" disabled={!regionCode || mutation.isPending} type="submit">
-                  {mutation.isPending ? text.submitting : text.submit}
-                </button>
+                <TimePicker
+                  value={time}
+                  text={text}
+                  disabled={!regionCode || mutation.isPending}
+                  onConfirm={confirmTime}
+                />
                 {mutation.isError && <p className="form-error" role="alert">{text.submitError}</p>}
                 {result && (
                   <div className={`result-banner ${result.status.toLowerCase()}`} role="status">
@@ -131,7 +135,7 @@ export default function App() {
                     </div>
                   </div>
                 )}
-              </form>
+              </div>
 
               <div className="artwork-wrap" aria-hidden="true">
                 <img src="/assets/shva-hero-transparent.png" alt="" />
