@@ -238,8 +238,6 @@ main { padding: 76px 64px 60px; }
   cursor: pointer;
 }
 .region-popover li button:hover, .region-popover li button[aria-selected='true'] { background: #dfd2ee; }
-.region-popover small { color: #6b6571; }
-
 .time-field { width: min(328px, 100%); }
 .time-picker {
   width: 100%;

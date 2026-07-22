@@ -17,6 +17,7 @@ describe('RegionCombobox', () => {
     fireEvent.change(screen.getByLabelText(messages.en.searchRegion), { target: { value: 'jap' } })
 
     expect(screen.queryByRole('option', { name: /France/ })).not.toBeInTheDocument()
+    expect(screen.queryByText('Asia/Tokyo')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('option', { name: /Japan/ }))
     expect(onChange).toHaveBeenCalledWith('JP')
   })

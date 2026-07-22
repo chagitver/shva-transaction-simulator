@@ -70,7 +70,6 @@ export function RegionCombobox({ regions, value, locale, text, onChange }: Props
                   }}
                 >
                   <span>{region.name[locale]}</span>
-                  <small>{region.timeZoneId}</small>
                 </button>
               </li>
             ))}
